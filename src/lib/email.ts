@@ -12,12 +12,37 @@
  * manualmente (a senha aparece no log do servidor).
  */
 
-const FROM_DEFAULT = "Peça Pronta <contato@pecapronta.app>";
+const FROM_DEFAULT = "Peça Pronta <onboarding@resend.dev>";
 
 interface SendResult {
   sent: boolean;
   provider?: "resend";
   reason?: string;
+}
+
+/**
+ * Normaliza o EMAIL_FROM. Aceita 3 formatos:
+ *   1. "Name <email@x.com>"   → usa direto
+ *   2. "email@x.com"          → wraps com nome padrão
+ *   3. "Name" (sem email)     → cai pro DEFAULT (fallback seguro)
+ * Também remove aspas, quebras de linha e espaços extras que às vezes vêm
+ * coladas do painel da Vercel.
+ */
+function normalizeFromAddress(raw: string | undefined): string {
+  const value = (raw ?? "").replace(/^["']|["']$/g, "").trim().replace(/\s+/g, " ");
+  if (!value) return FROM_DEFAULT;
+
+  // Já é "Name <email@x>"
+  if (/<[^@\s>]+@[^@\s>]+>/.test(value)) return value;
+
+  // Só email puro
+  if (/^[^\s<>]+@[^\s<>]+\.[^\s<>]+$/.test(value)) {
+    return `Peça Pronta <${value}>`;
+  }
+
+  // Algo malformado — log e fallback
+  console.warn("[email] EMAIL_FROM em formato inválido:", JSON.stringify(value));
+  return FROM_DEFAULT;
 }
 
 export async function sendEmail(args: {
@@ -32,6 +57,8 @@ export async function sendEmail(args: {
     return { sent: false, reason: "no-provider" };
   }
 
+  const from = normalizeFromAddress(process.env.EMAIL_FROM);
+
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -40,7 +67,7 @@ export async function sendEmail(args: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM || FROM_DEFAULT,
+        from,
         to: args.to,
         subject: args.subject,
         html: args.html,
