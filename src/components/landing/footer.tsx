@@ -28,7 +28,7 @@ export function Footer() {
               <div className="font-semibold text-white">Conta</div>
               <ul className="mt-3 space-y-2 text-ink-300">
                 <li><Link href="/login" className="hover:text-white">Entrar</Link></li>
-                <li><Link href="/signup" className="hover:text-white">Cadastrar</Link></li>
+                <li><Link href="/#planos" className="hover:text-white">Adquirir</Link></li>
               </ul>
             </div>
             <div>
