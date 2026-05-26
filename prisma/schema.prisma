@@ -1,0 +1,143 @@
+// Prisma schema for Peça Pronta
+//
+// Gerencia apenas o schema `public`. O schema `auth` é do Supabase — não
+// declaramos aqui para que o Prisma não tente alterá-lo. A FK
+// `public.profiles.id → auth.users.id` é adicionada via prisma/extras.sql
+// depois do `prisma db push`.
+//
+// Comandos:
+//   npx prisma db push     # cria/atualiza as tabelas em public
+//   npm run db:extras      # aplica trigger, RLS, seed e a FK cross-schema
+//   npx prisma generate    # regenera o client (rodado automaticamente no push)
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Plan {
+  free
+  basic
+  premium
+  professional
+}
+
+enum DocumentStatus {
+  draft
+  final
+}
+
+enum UsageKind {
+  generation
+  review
+}
+
+model Profile {
+  // Mesma UUID que `auth.users.id`. A FK é adicionada via extras.sql.
+  id                  String    @id @db.Uuid
+  email               String
+  full_name           String?
+  plan                Plan      @default(free)
+  gateway_customer_id String?   @unique
+  trial_ends_at       DateTime? @db.Timestamptz(6)
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  subscriptions     Subscription[]
+  documents         Document[]
+  document_versions DocumentVersion[]
+  usage_events      UsageEvent[]
+
+  @@map("profiles")
+}
+
+model Subscription {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                  String    @db.Uuid
+  gateway                  String    @default("kiwify")
+  gateway_subscription_id  String    @unique
+  gateway_product_id       String
+  plan                     Plan
+  status                   String
+  current_period_end       DateTime? @db.Timestamptz(6)
+  cancel_at_period_end     Boolean   @default(false)
+  raw_event                Json?
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  profile Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("subscriptions")
+}
+
+model Document {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String         @db.Uuid
+  title         String
+  piece_type    String
+  area          String?
+  content       String         @default("")
+  input_payload Json           @default("{}")
+  status        DocumentStatus @default(draft)
+  created_at    DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+
+  profile  Profile           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  versions DocumentVersion[]
+
+  @@index([user_id])
+  @@index([updated_at(sort: Desc)])
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  document_id String   @db.Uuid
+  content     String
+  created_by  String?  @db.Uuid
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  document Document @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  creator  Profile? @relation(fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([document_id, created_at(sort: Desc)])
+  @@map("document_versions")
+}
+
+model Template {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  area        String
+  piece_type  String
+  description String?
+  body        String
+  is_premium  Boolean  @default(true)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+
+  @@index([area])
+  @@index([piece_type])
+  @@map("templates")
+}
+
+model UsageEvent {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  kind       UsageKind
+  tokens_in  Int?
+  tokens_out Int?
+  metadata   Json      @default("{}")
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+
+  profile Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at(sort: Desc)])
+  @@map("usage_events")
+}

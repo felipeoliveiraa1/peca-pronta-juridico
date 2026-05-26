@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Peça Pronta">
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#0f172a" />
+  <path
+    d="M16 14 V50 M16 14 H35 A11 11 0 0 1 35 36 H16"
+    stroke="#ffffff"
+    stroke-width="6"
+    fill="none"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="46" cy="46" r="10" fill="none" stroke="#ffffff" stroke-width="2.5" />
+  <path
+    d="M41.5 46.5 L45 50 L51 41.5"
+    stroke="#ffffff"
+    stroke-width="2.6"
+    fill="none"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
