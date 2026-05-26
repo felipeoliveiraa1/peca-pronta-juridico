@@ -35,7 +35,8 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isProtected = pathname.startsWith("/dashboard");
-  const isAuthPage = pathname.startsWith("/login");
+  // /login/reset precisa funcionar mesmo autenticado (sessão de recovery)
+  const isAuthPage = pathname.startsWith("/login") && !pathname.startsWith("/login/reset");
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
