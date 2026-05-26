@@ -44,6 +44,23 @@ export async function POST(req: Request) {
   const productId = payload.Product?.product_id ?? null;
   const offerId = payload.Subscription?.plan?.id ?? null;
 
+  // Log destacado pra DESCOBRIR plan_id e product_id reais. Aparece em
+  // Vercel → Logs ao receber qualquer postback.
+  console.log(
+    `[kiwify-webhook] event=${eventType} | resolved_plan=${plan} | ` +
+      `productId=${productId} | offerId(Subscription.plan.id)=${offerId} | ` +
+      `productName=${payload.Product?.product_name ?? "-"} | ` +
+      `offerName=${payload.Subscription?.plan?.name ?? "-"} | ` +
+      `customerEmail=${payload.Customer?.email ?? "-"}`,
+  );
+  if (!plan) {
+    console.warn(
+      "[kiwify-webhook] ⚠️ NÃO conseguiu mapear plan. " +
+        "Configure no .env: KIWIFY_PLAN_ID_BASIC=" + (offerId ?? "?") +
+        " (se for Estudante) — ou _PREMIUM/_PROFESSIONAL conforme o caso.",
+    );
+  }
+
   // Resolve (ou cria) o profile correspondente.
   let profileId = await resolveProfileId(supabase, payload);
   let createdNow = false;
