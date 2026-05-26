@@ -30,8 +30,8 @@ export async function GET(request: Request, { params }: RouteCtx) {
   const filename = slugify(doc.title);
 
   if (format === "docx") {
-    const paragraphs = doc.content.split(/\n+/).map(
-      (line) =>
+    const paragraphs = (doc.content as string).split(/\n+/).map(
+      (line: string) =>
         new Paragraph({
           children: [new TextRun({ text: line, font: "Times New Roman", size: 24 })],
           spacing: { after: 200 },
@@ -43,7 +43,7 @@ export async function GET(request: Request, { params }: RouteCtx) {
       sections: [{ children: paragraphs }],
     });
     const buf = await Packer.toBuffer(docx);
-    return new NextResponse(buf, {
+    return new NextResponse(new Uint8Array(buf), {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "Content-Disposition": `attachment; filename="${filename}.docx"`,
