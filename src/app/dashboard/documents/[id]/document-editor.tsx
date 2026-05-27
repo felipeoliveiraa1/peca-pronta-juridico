@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
 import { formatDateBR } from "@/lib/utils";
+import { EditorTour } from "@/components/dashboard/tour-steps";
 
 interface Props {
   doc: {
@@ -220,6 +221,7 @@ export function DocumentEditor({ doc }: Props) {
 
   return (
     <div className="space-y-4">
+      <EditorTour />
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">

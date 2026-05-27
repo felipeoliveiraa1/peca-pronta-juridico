@@ -75,7 +75,10 @@ export async function POST(req: Request) {
       model: GENERATION_MODEL,
       system: SYSTEM_PROMPT_GENERATION,
       user,
-      maxTokens: 4096,
+      // Peças jurídicas brasileiras são extensas. 8192 cobre petições
+      // iniciais completas (qualificação, fatos numerados, fundamentação
+      // robusta, tutela, pedidos detalhados, protesto, fórmula final).
+      maxTokens: 8192,
     });
   } catch (err) {
     console.error("[generate] openai error", err);

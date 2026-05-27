@@ -24,6 +24,7 @@ import { loadDashboardStats } from "@/lib/dashboard-stats";
 import { getTodayTip } from "@/lib/daily-tips";
 import { formatDateBR } from "@/lib/utils";
 import { UsageChart } from "@/components/dashboard/usage-chart";
+import { DashboardTour } from "@/components/dashboard/tour-steps";
 
 export const metadata = { title: "Painel — Peça Pronta" };
 
@@ -49,6 +50,7 @@ export default async function DashboardHome() {
 
   return (
     <div className="space-y-8">
+      <DashboardTour />
       {/* Header personalizado */}
       <section className="relative overflow-hidden rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-600 via-brand-700 to-emerald-600 p-6 text-white shadow-lg">
         <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-amber-300/30 blur-3xl" />

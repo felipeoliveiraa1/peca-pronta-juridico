@@ -1,6 +1,7 @@
 import { JURISPRUDENCIA, JURIS_AREAS, JURIS_COURTS } from "@/lib/jurisprudencia";
 import { JurisprudenciaList } from "./jurisprudencia-list";
 import { Gavel } from "lucide-react";
+import { JurisprudenceTour } from "@/components/dashboard/tour-steps";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export const metadata = { title: "Jurisprudência em Destaque — Peça Pronta" };
@@ -8,6 +9,7 @@ export const metadata = { title: "Jurisprudência em Destaque — Peça Pronta" 
 export default function JurisprudenciaPage() {
   return (
     <div className="space-y-6">
+      <JurisprudenceTour />
       <div className="flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
           <Gavel className="h-5 w-5" />

@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         content: parsed.data.content,
         plan: planDef.name,
       }),
-      maxTokens: 2048,
+      maxTokens: 4096,
     });
   } catch (err) {
     console.error("[review] openai error", err);

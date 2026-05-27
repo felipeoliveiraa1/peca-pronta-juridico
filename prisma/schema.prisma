@@ -36,6 +36,13 @@ enum DocumentStatus {
 enum UsageKind {
   generation
   review
+  chat
+}
+
+enum ChatRole {
+  user
+  assistant
+  system
 }
 
 model Profile {
@@ -53,6 +60,7 @@ model Profile {
   documents         Document[]
   document_versions DocumentVersion[]
   usage_events      UsageEvent[]
+  chat_messages     ChatMessage[]
 
   @@map("profiles")
 }
@@ -140,4 +148,20 @@ model UsageEvent {
 
   @@index([user_id, created_at(sort: Desc)])
   @@map("usage_events")
+}
+
+model ChatMessage {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @db.Uuid
+  conversation_id String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role            ChatRole
+  content         String
+  tokens          Int?
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  profile Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([conversation_id, created_at])
+  @@map("chat_messages")
 }

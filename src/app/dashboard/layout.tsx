@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
-import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
+import { ChatWidget } from "@/components/dashboard/chat-widget";
 import { getCurrentProfile } from "@/lib/profile";
 import { getCurrentUsage } from "@/lib/usage";
 
@@ -23,9 +23,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           usedThisMonth={usage.used}
           monthLimit={usage.limit}
         />
-        <main className="flex-1 p-4 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 pb-24 lg:p-8 lg:pb-24">{children}</main>
       </div>
-      <OnboardingTour />
+      <ChatWidget />
     </div>
   );
 }

@@ -1,12 +1,14 @@
 import { GLOSSARY, GLOSSARY_AREAS } from "@/lib/glossario";
 import { GlossaryView } from "./glossary-view";
 import { BookOpen } from "lucide-react";
+import { GlossaryTour } from "@/components/dashboard/tour-steps";
 
 export const metadata = { title: "Glossário Jurídico — Peça Pronta" };
 
 export default function GlossarioPage() {
   return (
     <div className="space-y-6">
+      <GlossaryTour />
       <div className="flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
           <BookOpen className="h-5 w-5" />

@@ -64,7 +64,9 @@ export async function POST(req: Request) {
       model: GENERATION_MODEL,
       system: cfg.system,
       user,
-      maxTokens: 2048,
+      // 8192 pra "aplicar_revisao" (reescreve peça completa);
+      // 2048 é suficiente pras outras ações pontuais.
+      maxTokens: parsed.data.action === "aplicar_revisao" ? 8192 : 2048,
     });
     return NextResponse.json({ text: result.text });
   } catch (err) {

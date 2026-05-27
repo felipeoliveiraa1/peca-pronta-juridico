@@ -3,6 +3,7 @@ import { AREAS, PIECE_TYPES, PIECES_BY_AREA } from "@/lib/piece-types";
 import { requireProfile } from "@/lib/profile";
 import { getCurrentUsage } from "@/lib/usage";
 import { getPlan } from "@/lib/plans";
+import { GenerateTour } from "@/components/dashboard/tour-steps";
 
 export const metadata = { title: "Gerar peça — Peça Pronta" };
 
@@ -41,6 +42,7 @@ export default async function NewPiecePage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
+      <GenerateTour />
       <div>
         <h1 className="text-2xl font-semibold text-ink-900">Gerar nova peça</h1>
         <p className="mt-1 text-sm text-ink-700">

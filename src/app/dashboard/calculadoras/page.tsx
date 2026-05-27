@@ -1,12 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calculator } from "lucide-react";
 import { CalculatorWidgets } from "./calculator-widgets";
+import { CalculatorsTour } from "@/components/dashboard/tour-steps";
 
 export const metadata = { title: "Calculadoras Jurídicas — Peça Pronta" };
 
 export default function CalculadorasPage() {
   return (
     <div className="space-y-6">
+      <CalculatorsTour />
       <div className="flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
           <Calculator className="h-5 w-5" />

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/profile";
 import { getPlan } from "@/lib/plans";
 import { TemplateFilters } from "./template-filters";
+import { TemplatesTour } from "@/components/dashboard/tour-steps";
 
 export const metadata = { title: "Biblioteca de modelos — Peça Pronta" };
 
@@ -30,6 +31,7 @@ export default async function TemplatesPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
+      <TemplatesTour />
       <div>
         <h1 className="text-2xl font-semibold text-ink-900">Biblioteca de modelos</h1>
         <p className="mt-1 text-sm text-ink-700">

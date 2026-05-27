@@ -145,17 +145,21 @@ export interface PieceType {
 const baseParties: PieceField[] = [
   {
     id: "autor",
-    label: "Parte autora / Requerente",
-    helper: "Nome completo, qualificação e endereço da parte ativa.",
-    placeholder: "Ex.: João da Silva, brasileiro, casado, CPF nº ...",
+    label: "Parte autora / Requerente — qualificação COMPLETA",
+    helper:
+      "Inclua: nome completo, nacionalidade, estado civil, profissão, RG, CPF/CNPJ, endereço completo com CEP, e-mail. Pode deixar [INSERIR] em dados que não tiver — a IA usa marcadores.",
+    placeholder:
+      "Ex.: João da Silva, brasileiro, casado, autônomo, portador do RG nº 12.345.678 SSP/SP, CPF nº 123.456.789-00, residente e domiciliado à Rua das Flores, nº 123, apto 401, Bairro Centro, São Paulo/SP, CEP 01000-000",
     type: "textarea",
     required: true,
   },
   {
     id: "reu",
-    label: "Parte ré / Requerida",
-    helper: "Nome completo / razão social e qualificação da parte passiva.",
-    placeholder: "Ex.: Empresa XYZ Ltda., CNPJ nº ...",
+    label: "Parte ré / Requerida — qualificação COMPLETA",
+    helper:
+      "PF: nome, estado civil, profissão, CPF, endereço. PJ: razão social, CNPJ, endereço, representante legal se souber. Use [INSERIR] em dados ausentes.",
+    placeholder:
+      "Ex.: Magazine XYZ Ltda., pessoa jurídica de direito privado, inscrita no CNPJ sob nº 12.345.678/0001-90, com sede à Av. Paulista, nº 1.000, conjunto 50, São Paulo/SP, CEP 01310-100, representada por seu sócio-administrador [INSERIR]",
     type: "textarea",
     required: true,
   },
@@ -163,27 +167,33 @@ const baseParties: PieceField[] = [
 
 const baseFacts: PieceField = {
   id: "fatos",
-  label: "Fatos relevantes",
-  helper: "Descreva, em ordem cronológica, os fatos que sustentam o pleito.",
-  placeholder: "Em 12/03/2026, o autor adquiriu produto...",
+  label: "Fatos relevantes — narrativa completa",
+  helper:
+    "Descreva em ordem cronológica TUDO que importa: datas (com mês/ano), valores, tentativas de solução, documentos disponíveis, prejuízos sofridos. Quanto mais detalhe, mais robusta a peça.",
+  placeholder:
+    "Ex.: Em 10/03/2026 o autor adquiriu, pelo site da ré, uma TV LG OLED 55 polegadas, modelo OLED55C2PSA, pelo valor de R$ 7.500,00, pago via cartão de crédito em 10x. O produto foi entregue em 20/03/2026 com a tela quebrada, conforme fotos e nota fiscal anexas. Entre 21/03 e 15/04 o autor entrou em contato 5 vezes pelo SAC e pelo WhatsApp oficial, sem resposta efetiva. Em 20/04/2026 protocolou reclamação no PROCON sob nº ___, e a ré não se manifestou no prazo legal de 30 dias.",
   type: "textarea",
   required: true,
 };
 
 const baseRequest: PieceField = {
   id: "pedido",
-  label: "Pedido principal",
-  helper: "O que se busca obter? Tutela, condenação, valores, obrigação de fazer, etc.",
-  placeholder: "Ex.: Condenação ao pagamento de indenização por danos morais no valor de R$ 15.000,00 ...",
+  label: "Pedido principal — o que se busca",
+  helper:
+    "Detalhe a obrigação pretendida (fazer/não-fazer/dar coisa), valores específicos e parâmetros. A IA também adiciona automaticamente os pedidos clássicos (citação, custas, honorários, gratuidade se for o caso).",
+  placeholder:
+    "Ex.: a) Condenação da ré à OBRIGAÇÃO DE FAZER consistente na substituição imediata do produto por outro idêntico em perfeitas condições, no prazo de 15 dias; OU subsidiariamente a restituição integral do valor pago de R$ 7.500,00, monetariamente atualizado pelo IPCA e acrescido de juros legais; b) Indenização por danos morais no valor de R$ 8.000,00.",
   type: "textarea",
   required: true,
 };
 
 const baseFundamentos: PieceField = {
   id: "fundamentos",
-  label: "Teses jurídicas e fundamentos pretendidos",
-  helper: "Aponte dispositivos legais, súmulas ou jurisprudência que deseje destacar (opcional).",
-  placeholder: "Ex.: art. 14 do CDC; Súmula 297 do STJ ...",
+  label: "Fundamentos legais a destacar (opcional)",
+  helper:
+    "Quer enfatizar algum dispositivo ou súmula específica? A IA já inclui os principais aplicáveis à área. Aqui você adiciona prioritários do seu caso.",
+  placeholder:
+    "Ex.: art. 14 e art. 18 do CDC; Súmula 297 do STJ; CF art. 5º, XXXII; Lei 9.656/98 se for plano de saúde; Lei 8.245/91 se for locação",
   type: "textarea",
   required: false,
 };

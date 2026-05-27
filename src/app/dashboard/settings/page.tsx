@@ -9,6 +9,7 @@ import { getPlan, PLANS, type PlanId } from "@/lib/plans";
 import { formatCurrencyBRL, formatDateBR, cn } from "@/lib/utils";
 import { getCurrentUsage } from "@/lib/usage";
 import { CheckoutButton, KiwifyCustomerAreaButton } from "./billing-actions";
+import { SettingsTour } from "@/components/dashboard/tour-steps";
 
 export const metadata = { title: "Plano e cobrança — Peça Pronta" };
 
@@ -26,6 +27,7 @@ export default async function SettingsPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
+      <SettingsTour />
       <div>
         <h1 className="text-2xl font-semibold text-ink-900">Plano e cobrança</h1>
         <p className="mt-1 text-sm text-ink-700">
