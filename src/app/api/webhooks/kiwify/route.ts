@@ -158,7 +158,12 @@ export async function POST(req: Request) {
   // ============================================================
   // Meta Conversions API — dispara Purchase no order_approved
   // ============================================================
-  if (eventType === "order_approved" && plan && payload.Customer?.email) {
+  // Controlado pela env META_CAPI_FIRE_PURCHASE (default: "false")
+  // pq quem dispara o Purchase é o Pixel/CAPI da Kiwify no checkout
+  // dela (evita double count nas métricas). Setar "true" só se o
+  // Pixel da Kiwify estiver desativado.
+  const firePurchase = process.env.META_CAPI_FIRE_PURCHASE === "true";
+  if (firePurchase && eventType === "order_approved" && plan && payload.Customer?.email) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const fullName = (payload.Customer.full_name || "").trim();
     const [firstName, ...rest] = fullName.split(/\s+/);
