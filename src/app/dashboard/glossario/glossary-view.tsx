@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Lightbulb, GitCompare, Link as LinkIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,11 @@ export function GlossaryView({ terms, areas }: { terms: GlossaryTerm[]; areas: s
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(
-        (t) => t.term.toLowerCase().includes(q) || t.definition.toLowerCase().includes(q),
+        (t) =>
+          t.term.toLowerCase().includes(q) ||
+          t.definition.toLowerCase().includes(q) ||
+          (t.example ?? "").toLowerCase().includes(q) ||
+          (t.differentFrom ?? "").toLowerCase().includes(q),
       );
     }
     return list.sort((a, b) => a.term.localeCompare(b.term, "pt-BR"));
@@ -99,13 +103,49 @@ export function GlossaryView({ terms, areas }: { terms: GlossaryTerm[]; areas: s
                 {items.map((t) => (
                   <Card key={t.term}>
                     <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-2">
                         <dt className="font-bold text-ink-900">{t.term}</dt>
-                        <Badge variant="outline">{t.area}</Badge>
+                        <Badge variant="outline" className="shrink-0">
+                          {t.area}
+                        </Badge>
                       </div>
-                      <dd className="mt-2 text-sm text-ink-700">{t.definition}</dd>
-                      {t.relatedArt && (
-                        <p className="mt-2 text-xs text-brand-700">📌 {t.relatedArt}</p>
+                      <dd className="mt-2 text-sm leading-relaxed text-ink-700">
+                        {t.definition}
+                      </dd>
+                      {t.example && (
+                        <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50/60 p-2.5 text-xs text-emerald-900">
+                          <div className="mb-1 flex items-center gap-1 font-semibold uppercase tracking-wide">
+                            <Lightbulb className="h-3 w-3" /> Exemplo
+                          </div>
+                          <p className="leading-relaxed">{t.example}</p>
+                        </div>
+                      )}
+                      {t.differentFrom && (
+                        <div className="mt-2 rounded-md border border-amber-200 bg-amber-50/60 p-2.5 text-xs text-amber-900">
+                          <div className="mb-1 flex items-center gap-1 font-semibold uppercase tracking-wide">
+                            <GitCompare className="h-3 w-3" /> Não confundir
+                          </div>
+                          <p className="leading-relaxed">{t.differentFrom}</p>
+                        </div>
+                      )}
+                      {(t.relatedArt || t.relatedTerms?.length) && (
+                        <div className="mt-3 space-y-1.5 border-t border-ink-200 pt-2.5">
+                          {t.relatedArt && (
+                            <p className="text-xs text-brand-700">📌 {t.relatedArt}</p>
+                          )}
+                          {t.relatedTerms?.length ? (
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs text-ink-600">
+                              <LinkIcon className="h-3 w-3 text-ink-500" />
+                              <span className="font-semibold">Ver também:</span>
+                              {t.relatedTerms.map((rt, idx) => (
+                                <span key={rt}>
+                                  <span className="text-brand-700">{rt}</span>
+                                  {idx < t.relatedTerms!.length - 1 ? ", " : ""}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
                       )}
                     </CardContent>
                   </Card>
