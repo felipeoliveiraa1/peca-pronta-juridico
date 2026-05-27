@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { MetaPixel } from "@/components/analytics/meta-pixel";
+import { UtmCapture } from "@/components/analytics/utm-capture";
 
 export const metadata: Metadata = {
   title: "Peça Pronta — Assistente Jurídico com IA",
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR">
       <body>
         <MetaPixel />
+        <UtmCapture />
         {children}
       </body>
     </html>

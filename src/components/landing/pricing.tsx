@@ -5,6 +5,7 @@ import { PLANS, type PlanId } from "@/lib/plans";
 import { formatCurrencyBRL, cn } from "@/lib/utils";
 import { publicCheckoutUrl } from "@/lib/checkout-links";
 import { trackEvent } from "@/lib/meta-pixel";
+import { appendUtmsToKiwifyUrl } from "@/lib/utm-tracking";
 
 const ORDER: PlanId[] = ["basic", "premium", "professional"];
 
@@ -88,7 +89,8 @@ export function Pricing() {
 
                 <a
                   href={url}
-                  onClick={() => {
+                  onClick={(e) => {
+                    // Dispara InitiateCheckout no Pixel client
                     trackEvent("InitiateCheckout", {
                       value: plan.priceBRL,
                       currency: "BRL",
@@ -96,6 +98,14 @@ export function Pricing() {
                       content_ids: [id],
                       content_type: "product",
                     });
+                    // Propaga UTMs/fbclid persistidos pra Kiwify capturar
+                    // (sem isso a Kiwify recebe TrackingParameters = null
+                    // e a gente perde a atribuição de qual ad converteu).
+                    const enriched = appendUtmsToKiwifyUrl(url);
+                    if (enriched !== url) {
+                      e.preventDefault();
+                      window.location.href = enriched;
+                    }
                   }}
                   className={cn(
                     "mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl font-extrabold uppercase tracking-wide text-white transition hover:scale-[1.02]",
