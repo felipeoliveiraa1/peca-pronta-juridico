@@ -4,6 +4,7 @@ import { ArrowRight, Check, Crown, ShieldCheck, Star } from "lucide-react";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { formatCurrencyBRL, cn } from "@/lib/utils";
 import { publicCheckoutUrl } from "@/lib/checkout-links";
+import { trackEvent } from "@/lib/meta-pixel";
 
 const ORDER: PlanId[] = ["basic", "premium", "professional"];
 
@@ -87,6 +88,15 @@ export function Pricing() {
 
                 <a
                   href={url}
+                  onClick={() => {
+                    trackEvent("InitiateCheckout", {
+                      value: plan.priceBRL,
+                      currency: "BRL",
+                      content_name: `Plano ${plan.name}`,
+                      content_ids: [id],
+                      content_type: "product",
+                    });
+                  }}
                   className={cn(
                     "mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl font-extrabold uppercase tracking-wide text-white transition hover:scale-[1.02]",
                     highlight

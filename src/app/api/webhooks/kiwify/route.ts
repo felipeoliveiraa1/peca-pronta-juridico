@@ -10,6 +10,8 @@ import {
   type KiwifyPayload,
 } from "@/lib/kiwify";
 import { generatePassword, renderCredentialsEmail, sendEmail } from "@/lib/email";
+import { sendCapiEvent, makeEventId } from "@/lib/meta-capi";
+import { PLANS } from "@/lib/plans";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -151,6 +153,39 @@ export async function POST(req: Request) {
         `[kiwify-webhook] credenciais NÃO enviadas. e-mail=${payload.Customer.email} senha=${provisionalPassword}`,
       );
     }
+  }
+
+  // ============================================================
+  // Meta Conversions API — dispara Purchase no order_approved
+  // ============================================================
+  if (eventType === "order_approved" && plan && payload.Customer?.email) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const fullName = (payload.Customer.full_name || "").trim();
+    const [firstName, ...rest] = fullName.split(/\s+/);
+    const lastName = rest.join(" ");
+    const value = PLANS[plan].priceBRL;
+    const orderRef = subscriptionRef ?? `kiwify-${Date.now()}`;
+
+    const capi = await sendCapiEvent({
+      eventName: "Purchase",
+      eventId: `purchase_${orderRef}`,
+      eventSourceUrl: `${appUrl}/`,
+      user: {
+        email: payload.Customer.email,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        externalId: profileId,
+      },
+      customData: {
+        value,
+        currency: "BRL",
+        content_name: `Plano ${PLANS[plan].name}`,
+        content_ids: [plan],
+        content_type: "product",
+        order_id: orderRef,
+      },
+    });
+    console.log(`[meta-capi] Purchase ${capi.sent ? "OK" : "FAIL"} (${capi.reason ?? "-"})`);
   }
 
   return NextResponse.json({
