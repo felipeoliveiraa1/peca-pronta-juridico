@@ -39,10 +39,12 @@ export function ChatWidget() {
   const [usage, setUsage] = useState<{ used: number; limit: number | null } | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const historyFetched = useRef(false);
 
-  // Carrega histórico ao abrir pela 1ª vez
+  // Carrega histórico ao abrir pela 1ª vez (apenas uma vez por montagem)
   useEffect(() => {
-    if (!open || messages.length > 0 || initialLoading) return;
+    if (!open || historyFetched.current) return;
+    historyFetched.current = true;
     setInitialLoading(true);
     fetch("/api/chat")
       .then((r) => r.json())
@@ -54,7 +56,7 @@ export function ChatWidget() {
       })
       .catch(() => {})
       .finally(() => setInitialLoading(false));
-  }, [open, messages.length, initialLoading]);
+  }, [open]);
 
   // Auto-scroll ao receber nova mensagem
   useEffect(() => {
