@@ -10,11 +10,13 @@ export function Topbar({
   plan,
   usedThisMonth,
   monthLimit,
+  isAdmin = false,
 }: {
   email: string;
   plan: PlanId;
   usedThisMonth: number;
   monthLimit: number | null;
+  isAdmin?: boolean;
 }) {
   const planDef = getPlan(plan);
   return (
@@ -41,7 +43,7 @@ export function Topbar({
         >
           {monthLimit == null ? `${usedThisMonth} peças (ilimitado)` : `${usedThisMonth} / ${monthLimit} peças`}
         </Badge>
-        <UserMenu email={email} planLabel={planDef.name} />
+        <UserMenu email={email} planLabel={planDef.name} isAdmin={isAdmin} />
       </div>
     </header>
   );

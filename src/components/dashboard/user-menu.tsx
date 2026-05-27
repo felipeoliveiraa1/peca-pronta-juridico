@@ -2,9 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, LogOut, Settings, User } from "lucide-react";
+import { ChevronDown, LogOut, Settings, User, ShieldCheck } from "lucide-react";
 
-export function UserMenu({ email, planLabel }: { email: string; planLabel: string }) {
+export function UserMenu({
+  email,
+  planLabel,
+  isAdmin = false,
+}: {
+  email: string;
+  planLabel: string;
+  isAdmin?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -60,6 +68,15 @@ export function UserMenu({ email, planLabel }: { email: string; planLabel: strin
             </div>
           </div>
 
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 border-b border-ink-300/60 bg-amber-50/50 px-4 py-2.5 text-sm font-medium text-amber-800 hover:bg-amber-100/60"
+            >
+              <ShieldCheck className="h-4 w-4" /> Painel Admin
+            </Link>
+          )}
           <Link
             href="/dashboard/settings"
             onClick={() => setOpen(false)}
