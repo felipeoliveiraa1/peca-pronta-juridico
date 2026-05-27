@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { formatDateBR } from "@/lib/utils";
+import { getAdminUserIds } from "@/lib/admin-data";
 
 export const metadata = { title: "Chat IA — Admin" };
 
@@ -22,14 +23,17 @@ export default async function AdminChatPage({ searchParams }: PageProps) {
   const sp = await searchParams;
   const sb = createServiceClient();
 
-  // Estatísticas
-  const { data: allMsgs } = await sb
-    .from("chat_messages")
-    .select("id, user_id, conversation_id, role, content, created_at")
-    .order("created_at", { ascending: false })
-    .limit(2000);
+  // Estatísticas (admins fora)
+  const [adminIds, { data: allMsgs }] = await Promise.all([
+    getAdminUserIds(),
+    sb
+      .from("chat_messages")
+      .select("id, user_id, conversation_id, role, content, created_at")
+      .order("created_at", { ascending: false })
+      .limit(2000),
+  ]);
 
-  const msgs = allMsgs ?? [];
+  const msgs = (allMsgs ?? []).filter((m) => !adminIds.has(m.user_id));
   const now30 = daysAgoISO(30);
   const last30 = msgs.filter((m) => m.created_at >= now30);
   const userMsgs30 = last30.filter((m) => m.role === "user");

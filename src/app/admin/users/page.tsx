@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { formatDateBR } from "@/lib/utils";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { isAdminEmail } from "@/lib/admin";
 import { UsersTable } from "./users-table";
 
 interface PageProps {
@@ -30,11 +31,12 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
   if (sp.plan && sp.plan !== "all") query = query.eq("plan", sp.plan);
   if (sp.q?.trim()) query = query.or(`email.ilike.%${sp.q.trim()}%,full_name.ilike.%${sp.q.trim()}%`);
 
-  const { data: profiles } = await query;
+  const { data: profilesRaw } = await query;
+  const profiles = (profilesRaw ?? []).filter((p) => !isAdminEmail(p.email));
 
   // Conta de documentos e mensagens por usuário (uma query agregada por
   // chamada — em volume baixo é barato).
-  const userIds = (profiles ?? []).map((p) => p.id);
+  const userIds = profiles.map((p) => p.id);
   let docCounts = new Map<string, number>();
   let msgCounts = new Map<string, number>();
   if (userIds.length > 0) {
@@ -55,7 +57,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
     }
   }
 
-  const enriched = (profiles ?? []).map((p) => ({
+  const enriched = profiles.map((p) => ({
     id: p.id,
     email: p.email,
     full_name: p.full_name ?? "",

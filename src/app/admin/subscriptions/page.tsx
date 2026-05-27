@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { formatCurrencyBRL, formatDateBR } from "@/lib/utils";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { getAdminUserIds } from "@/lib/admin-data";
 
 export const metadata = { title: "Assinaturas — Admin" };
 
@@ -27,14 +28,15 @@ export default async function AdminSubscriptionsPage({ searchParams }: PageProps
   if (sp.status && sp.status !== "all") q = q.eq("status", sp.status);
   if (sp.plan && sp.plan !== "all") q = q.eq("plan", sp.plan);
 
+  const adminIds = await getAdminUserIds();
   const { data: subs } = await q;
-  const rows = subs ?? [];
+  const rows = (subs ?? []).filter((r) => !adminIds.has(r.user_id));
 
-  // Estatísticas globais (todas, não apenas filtradas)
+  // Estatísticas globais (admins fora)
   const { data: allSubs } = await sb
     .from("subscriptions")
-    .select("plan, status");
-  const all = allSubs ?? [];
+    .select("user_id, plan, status");
+  const all = (allSubs ?? []).filter((s) => !adminIds.has(s.user_id));
 
   const activeByPlan: Record<PlanId, number> = {
     free: 0,

@@ -2,6 +2,21 @@ import "server-only";
 import { createServiceClient } from "@/lib/supabase/server";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { estimateCostBRL, estimateCostUSD } from "@/lib/ai-costs";
+import { isAdminEmail } from "@/lib/admin";
+
+/**
+ * Carrega o set de profile IDs cujos emails são admin — usado para
+ * excluir admins de todos os KPIs, listas e contagens do painel.
+ */
+export async function getAdminUserIds(): Promise<Set<string>> {
+  const sb = createServiceClient();
+  const { data } = await sb.from("profiles").select("id, email");
+  const ids = new Set<string>();
+  for (const p of data ?? []) {
+    if (isAdminEmail(p.email)) ids.add(p.id);
+  }
+  return ids;
+}
 
 export interface KpiSummary {
   users: {
@@ -92,11 +107,15 @@ export async function getKpiSummary(): Promise<KpiSummary> {
   const now7 = daysAgoISO(7);
   const todayStart = todayStartISO();
 
-  // --- Profiles
+  // --- Profiles (admins excluídos das estatísticas)
   const { data: profilesRaw } = await sb
     .from("profiles")
-    .select("id, plan, created_at");
-  const profiles = profilesRaw ?? [];
+    .select("id, email, plan, created_at");
+  const adminIds = new Set<string>();
+  for (const p of profilesRaw ?? []) {
+    if (isAdminEmail(p.email)) adminIds.add(p.id);
+  }
+  const profiles = (profilesRaw ?? []).filter((p) => !adminIds.has(p.id));
 
   const byPlan: Record<PlanId, number> = {
     free: 0,
@@ -112,19 +131,19 @@ export async function getKpiSummary(): Promise<KpiSummary> {
   const newLast30d = profiles.filter((p) => p.created_at >= now30).length;
   const newLast7d = profiles.filter((p) => p.created_at >= now7).length;
 
-  // --- Documents
+  // --- Documents (admins fora)
   const { data: documentsRaw } = await sb
     .from("documents")
     .select("id, user_id, created_at");
-  const documents = documentsRaw ?? [];
+  const documents = (documentsRaw ?? []).filter((d) => !adminIds.has(d.user_id));
   const docsLast30 = documents.filter((d) => d.created_at >= now30);
   const docsLast7 = documents.filter((d) => d.created_at >= now7);
 
-  // --- Usage events (generation / review / chat)
+  // --- Usage events (admins fora)
   const { data: usageRaw } = await sb
     .from("usage_events")
     .select("id, user_id, kind, tokens_in, tokens_out, created_at");
-  const usage = usageRaw ?? [];
+  const usage = (usageRaw ?? []).filter((u) => !adminIds.has(u.user_id));
 
   const generations = usage.filter((u) => u.kind === "generation");
   const generationsLast30 = generations.filter((u) => u.created_at >= now30);

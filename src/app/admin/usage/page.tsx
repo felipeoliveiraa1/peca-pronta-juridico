@@ -4,6 +4,7 @@ import { KpiCard } from "@/components/admin/kpi-card";
 import { Sparkline } from "@/components/admin/sparkline";
 import { formatCurrencyBRL, formatDateBR } from "@/lib/utils";
 import { estimateCostBRL, estimateCostUSD, OPENAI_PRICING, USD_TO_BRL } from "@/lib/ai-costs";
+import { getAdminUserIds } from "@/lib/admin-data";
 
 export const metadata = { title: "Uso & Custos — Admin" };
 
@@ -31,7 +32,8 @@ export default async function AdminUsagePage({ searchParams }: PageProps) {
     .limit(500);
   if (sp.kind && sp.kind !== "all") q = q.eq("kind", sp.kind);
 
-  const [{ data: rows }, { data: allEvents }] = await Promise.all([
+  const [adminIds, { data: rows }, { data: allEvents }] = await Promise.all([
+    getAdminUserIds(),
     q,
     sb
       .from("usage_events")
@@ -39,8 +41,8 @@ export default async function AdminUsagePage({ searchParams }: PageProps) {
       .gte("created_at", daysAgoISO(30)),
   ]);
 
-  const events = rows ?? [];
-  const last30 = allEvents ?? [];
+  const events = (rows ?? []).filter((r) => !adminIds.has(r.user_id));
+  const last30 = (allEvents ?? []).filter((r) => !adminIds.has(r.user_id));
 
   // KPIs últimos 30 dias por tipo
   const byKind = {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { formatDateBR } from "@/lib/utils";
+import { getAdminUserIds } from "@/lib/admin-data";
 
 interface PageProps {
   searchParams: Promise<{ q?: string; piece?: string }>;
@@ -21,8 +22,9 @@ export default async function AdminDocumentsPage({ searchParams }: PageProps) {
   if (sp.piece && sp.piece !== "all") q = q.eq("piece_type", sp.piece);
   if (sp.q?.trim()) q = q.ilike("title", `%${sp.q.trim()}%`);
 
+  const adminIds = await getAdminUserIds();
   const { data: docs } = await q;
-  const rows = docs ?? [];
+  const rows = (docs ?? []).filter((d) => !adminIds.has(d.user_id));
 
   // Mapeia user_id -> email
   const userIds = Array.from(new Set(rows.map((d) => d.user_id)));
