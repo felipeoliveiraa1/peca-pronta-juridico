@@ -55,6 +55,15 @@ export interface KpiSummary {
     mrrEstimatedBRL: number;
     paidUsers: number;
   };
+  subscriptions: {
+    active: number;
+    canceled: number;
+    refunded: number;
+    chargeback: number;
+    pastDue: number;
+    other: number;
+    activeByPlan: Record<PlanId, number>;
+  };
   series: {
     /** Últimos 30 dias: gerações por dia */
     generationsByDay: { date: string; count: number }[];
@@ -176,12 +185,75 @@ export async function getKpiSummary(): Promise<KpiSummary> {
     }
   }
 
-  // --- Revenue
-  const paidUsers = byPlan.basic + byPlan.premium + byPlan.professional;
-  const mrr =
-    byPlan.basic * PLANS.basic.priceBRL +
-    byPlan.premium * PLANS.premium.priceBRL +
-    byPlan.professional * PLANS.professional.priceBRL;
+  // --- Subscriptions / Revenue (baseado em status real, não em profile.plan)
+  const { data: subsRaw } = await sb
+    .from("subscriptions")
+    .select("user_id, plan, status");
+  const subs = (subsRaw ?? []).filter((s) => !adminIds.has(s.user_id));
+
+  const activeByPlanSubs: Record<PlanId, number> = {
+    free: 0,
+    basic: 0,
+    premium: 0,
+    professional: 0,
+  };
+  let subActive = 0;
+  let subCanceled = 0;
+  let subRefunded = 0;
+  let subChargeback = 0;
+  let subPastDue = 0;
+  let subOther = 0;
+  // Mantém só a assinatura mais recente por user, por status (evita duplicar
+  // user que comprou, foi reembolsado, recomprou — só conta o estado atual).
+  // Mas pra MRR é mais simples: soma todas as ativas.
+  for (const s of subs) {
+    const st = (s.status ?? "").toLowerCase();
+    if (st === "active" || st === "trialing" || st === "paid") subActive++;
+    else if (st === "canceled" || st === "cancelled") subCanceled++;
+    else if (st === "refunded") subRefunded++;
+    else if (st === "chargeback") subChargeback++;
+    else if (st === "past_due") subPastDue++;
+    else subOther++;
+  }
+
+  // MRR efetivo = só profiles cujo plan está pago E que NÃO têm subscription
+  // ativa em status terminal (refunded/canceled/chargeback) recente.
+  const terminalStatuses = new Set([
+    "canceled",
+    "cancelled",
+    "refunded",
+    "chargeback",
+    "rejected",
+  ]);
+  const usersWithTerminalSub = new Set<string>();
+  for (const s of subs) {
+    const st = (s.status ?? "").toLowerCase();
+    if (terminalStatuses.has(st)) usersWithTerminalSub.add(s.user_id);
+  }
+  const usersWithActiveSub = new Set<string>();
+  for (const s of subs) {
+    const st = (s.status ?? "").toLowerCase();
+    if (st === "active" || st === "trialing" || st === "paid") {
+      usersWithActiveSub.add(s.user_id);
+    }
+  }
+  // Considera "pagante" quem: tem plano pago E (tem sub ativa OU nunca teve
+  // sub com status terminal). Filtra reembolsados/cancelados do MRR.
+  let mrr = 0;
+  let paidUsers = 0;
+  for (const p of profiles) {
+    const plan = (p.plan as PlanId) ?? "free";
+    if (plan === "free") continue;
+    const isTerminal = usersWithTerminalSub.has(p.id);
+    const isActive = usersWithActiveSub.has(p.id);
+    // Se tem sub ativa, conta. Se não tem sub registrada nenhuma, conta também
+    // (talvez plano foi ajustado manualmente). Se só tem terminal, NÃO conta.
+    if (isActive || !isTerminal) {
+      mrr += PLANS[plan].priceBRL;
+      paidUsers += 1;
+      if (plan in activeByPlanSubs) activeByPlanSubs[plan]++;
+    }
+  }
 
   // --- Series
   const generationsByDay = buildDailySeries(
@@ -229,6 +301,15 @@ export async function getKpiSummary(): Promise<KpiSummary> {
     revenue: {
       mrrEstimatedBRL: mrr,
       paidUsers,
+    },
+    subscriptions: {
+      active: subActive,
+      canceled: subCanceled,
+      refunded: subRefunded,
+      chargeback: subChargeback,
+      pastDue: subPastDue,
+      other: subOther,
+      activeByPlan: activeByPlanSubs,
     },
     series: {
       generationsByDay,

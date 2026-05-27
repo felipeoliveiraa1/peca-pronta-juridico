@@ -46,14 +46,19 @@ export default async function AdminSubscriptionsPage({ searchParams }: PageProps
   };
   let activeTotal = 0;
   let canceled = 0;
+  let refunded = 0;
+  let chargeback = 0;
+  let pastDue = 0;
   for (const s of all) {
-    if (s.status === "active" || s.status === "trialing") {
+    const st = (s.status ?? "").toLowerCase();
+    if (st === "active" || st === "trialing" || st === "paid") {
       activeTotal++;
       const p = s.plan as PlanId;
       if (p in activeByPlan) activeByPlan[p]++;
-    } else if (s.status === "canceled" || s.status === "cancelled") {
-      canceled++;
-    }
+    } else if (st === "canceled" || st === "cancelled") canceled++;
+    else if (st === "refunded") refunded++;
+    else if (st === "chargeback") chargeback++;
+    else if (st === "past_due") pastDue++;
   }
   const mrr =
     activeByPlan.basic * PLANS.basic.priceBRL +
@@ -78,28 +83,18 @@ export default async function AdminSubscriptionsPage({ searchParams }: PageProps
         </p>
       </div>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <KpiCard
           label="MRR ativo"
           value={formatCurrencyBRL(mrr)}
-          hint={`${activeTotal} ativas`}
+          hint={`${activeTotal} assinatura(s)`}
           accent="emerald"
         />
-        <KpiCard
-          label="Total registradas"
-          value={NF.format(all.length)}
-        />
-        <KpiCard
-          label="Canceladas"
-          value={NF.format(canceled)}
-          accent="rose"
-        />
-        <KpiCard
-          label="Ativas premium"
-          value={NF.format(activeByPlan.premium)}
-          hint={`${activeByPlan.basic} estudante · ${activeByPlan.professional} prof.`}
-          accent="amber"
-        />
+        <KpiCard label="Ativas" value={NF.format(activeTotal)} accent="emerald" />
+        <KpiCard label="Canceladas" value={NF.format(canceled)} />
+        <KpiCard label="Reembolsadas" value={NF.format(refunded)} accent="rose" />
+        <KpiCard label="Chargeback" value={NF.format(chargeback)} accent="rose" />
+        <KpiCard label="Em atraso" value={NF.format(pastDue)} accent="amber" />
       </section>
 
       <form

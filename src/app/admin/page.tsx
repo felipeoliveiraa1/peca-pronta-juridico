@@ -7,6 +7,10 @@ import {
   CreditCard,
   Zap,
   Activity,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  AlertTriangle,
 } from "lucide-react";
 import { getKpiSummary } from "@/lib/admin-data";
 import { KpiCard } from "@/components/admin/kpi-card";
@@ -35,9 +39,9 @@ export default async function AdminOverviewPage() {
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <KpiCard
-            label="MRR estimado"
+            label="MRR efetivo"
             value={formatCurrencyBRL(k.revenue.mrrEstimatedBRL)}
-            hint={`${k.revenue.paidUsers} assinantes pagantes`}
+            hint={`${k.revenue.paidUsers} pagantes (reembolsados fora)`}
             icon={DollarSign}
             accent="emerald"
           />
@@ -59,6 +63,49 @@ export default async function AdminOverviewPage() {
             value={NF.format(k.users.activeLast30d)}
             hint="Geraram peça ou usaram chat"
             icon={Activity}
+            accent="amber"
+          />
+        </div>
+      </section>
+
+      {/* Status das assinaturas */}
+      <section>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-500">
+          Status das assinaturas (registros Kiwify)
+        </h3>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <KpiCard
+            label="Ativas"
+            value={NF.format(k.subscriptions.active)}
+            hint={`${k.subscriptions.activeByPlan.basic} estudante · ${k.subscriptions.activeByPlan.premium} premium · ${k.subscriptions.activeByPlan.professional} prof.`}
+            icon={CheckCircle2}
+            accent="emerald"
+          />
+          <KpiCard
+            label="Canceladas"
+            value={NF.format(k.subscriptions.canceled)}
+            hint="Usuário cancelou — não vira free até o fim do ciclo"
+            icon={XCircle}
+          />
+          <KpiCard
+            label="Reembolsadas"
+            value={NF.format(k.subscriptions.refunded)}
+            hint="Pediram refund (fora do MRR)"
+            icon={RotateCcw}
+            accent="rose"
+          />
+          <KpiCard
+            label="Chargeback"
+            value={NF.format(k.subscriptions.chargeback)}
+            hint="Disputa de cartão"
+            icon={AlertTriangle}
+            accent="rose"
+          />
+          <KpiCard
+            label="Em atraso"
+            value={NF.format(k.subscriptions.pastDue)}
+            hint="Renovação pendente"
+            icon={AlertTriangle}
             accent="amber"
           />
         </div>
