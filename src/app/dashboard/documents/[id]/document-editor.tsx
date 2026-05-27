@@ -48,10 +48,12 @@ export function DocumentEditor({ doc }: Props) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [reviewing, setReviewing] = useState(false);
   const [review, setReview] = useState<string | null>(null);
+  const [applyingReview, setApplyingReview] = useState(false);
   const [aiAction, setAiAction] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<string | null>(null);
   const [aiActionLabel, setAiActionLabel] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
+  const [autosaving, setAutosaving] = useState(false);
 
   // Atalho Ctrl+S / Cmd+S
   useEffect(() => {
@@ -65,6 +67,30 @@ export function DocumentEditor({ doc }: Props) {
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, title, status]);
+
+  // Auto-save a cada 30s se isDirty
+  useEffect(() => {
+    if (!isDirty) return;
+    const id = setTimeout(async () => {
+      setAutosaving(true);
+      await save();
+      setAutosaving(false);
+    }, 30_000);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDirty, content, title, status]);
+
+  // Avisa antes de fechar com alterações não salvas
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
 
   const stats = useMemo(() => {
     const words = content.trim() ? content.trim().split(/\s+/).length : 0;
@@ -135,6 +161,33 @@ export function DocumentEditor({ doc }: Props) {
     }
   }
 
+  async function applyReview() {
+    if (!review) return;
+    setApplyingReview(true);
+    try {
+      const res = await fetch("/api/text-action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "aplicar_revisao",
+          text: content,
+          // mando o relatório como context — endpoint anexa no user prompt
+          context: `RELATÓRIO DO REVISOR (incorpore TODAS as sugestões aplicáveis):\n\n${review}`,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Falha ao aplicar revisão");
+        return;
+      }
+      // Mostra na sidebar de ações de IA pro usuário decidir aplicar
+      setAiResult(data.text);
+      setAiActionLabel("Revisão aplicada");
+    } finally {
+      setApplyingReview(false);
+    }
+  }
+
   async function runAiAction(action: string, label: string) {
     setAiAction(action);
     setAiResult(null);
@@ -184,7 +237,15 @@ export function DocumentEditor({ doc }: Props) {
             <Badge variant={status === "final" ? "success" : "outline"}>
               {status === "final" ? "Finalizado" : "Rascunho"}
             </Badge>
-            {isDirty && <Badge variant="warning">Não salvo</Badge>}
+            {autosaving ? (
+              <Badge variant="outline">
+                <Loader2 className="mr-1 inline h-3 w-3 animate-spin" /> Salvando…
+              </Badge>
+            ) : isDirty ? (
+              <Badge variant="warning">⚠ Não salvo — auto-save em 30s</Badge>
+            ) : (
+              <Badge variant="success">✓ Salvo</Badge>
+            )}
             <span>· {formatDateBR(savedAt ?? doc.updatedAt)}</span>
           </div>
         </div>
@@ -344,12 +405,28 @@ export function DocumentEditor({ doc }: Props) {
       {/* Relatório de revisão */}
       {review && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between gap-3">
             <CardTitle className="text-base">
               <ClipboardCheck className="inline h-4 w-4 text-emerald-600" /> Relatório do revisor
             </CardTitle>
+            <Button
+              size="sm"
+              onClick={applyReview}
+              disabled={applyingReview || !!aiAction}
+              className="shrink-0"
+            >
+              {applyingReview ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Aplicando…</>
+              ) : (
+                <><Sparkles className="h-4 w-4" /> ✨ Aplicar revisão completa</>
+              )}
+            </Button>
           </CardHeader>
           <CardContent>
+            <p className="mb-3 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-xs text-brand-900">
+              💡 Clique em <strong>"Aplicar revisão completa"</strong> e a IA reescreve sua peça
+              incorporando todas as sugestões — você revisa o resultado antes de salvar.
+            </p>
             <pre className="prose-juridico whitespace-pre-wrap rounded-lg bg-ink-100/60 p-4 text-sm">
               {review}
             </pre>

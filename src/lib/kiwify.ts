@@ -170,6 +170,10 @@ export interface KiwifyPayload {
     full_name?: string;
     first_name?: string;
     email?: string;
+    mobile?: string;
+    CPF?: string;
+    ip?: string;
+    country?: string;
   };
   Subscription?: {
     status?: string;

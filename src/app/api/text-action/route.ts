@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const schema = z.object({
-  action: z.enum(["continuar", "resumir", "formalizar", "fundamentar", "encurtar"]),
+  action: z.enum(["continuar", "resumir", "formalizar", "fundamentar", "encurtar", "aplicar_revisao"]),
   text: z.string().min(20).max(20_000),
   context: z.string().optional(),
 });
@@ -37,6 +37,12 @@ const PROMPTS: Record<z.infer<typeof schema>["action"], { system: string; instru
     system:
       "Você é o assistente jurídico do Peça Pronta. Reduza o texto pela metade mantendo todo o conteúdo jurídico essencial e a estrutura. Responda APENAS com a versão encurtada.",
     instruction: "Encurte o texto a seguir mantendo o conteúdo jurídico essencial:",
+  },
+  aplicar_revisao: {
+    system:
+      'Você é o assistente jurídico do Peça Pronta. Receberá (1) o TEXTO ORIGINAL de uma peça processual brasileira e (2) o RELATÓRIO DE REVISÃO produzido por um revisor jurídico (com sugestões de correção gramatical, técnica, estrutura e fundamentação). Sua tarefa: reescrever a peça INCORPORANDO TODAS as sugestões do relatório que sejam aplicáveis. Mantenha tudo que está correto, melhore apenas onde o relatório aponta. Preserve a estrutura I/II/III, fórmula final ("Nestes termos, pede deferimento.") e marcadores entre colchetes. NÃO invente fatos novos. NÃO insira números de acórdãos inexistentes. Responda APENAS com o texto da peça revisada, sem comentários nem cabeçalhos extras.',
+    instruction:
+      "Reescreva a peça incorporando todas as melhorias sugeridas no relatório do revisor:",
   },
 };
 

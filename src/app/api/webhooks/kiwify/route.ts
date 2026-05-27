@@ -177,8 +177,12 @@ export async function POST(req: Request) {
       eventSourceUrl: `${appUrl}/`,
       user: {
         email: payload.Customer.email,
+        // mobile vem como "+5511998002960" — meta-capi normaliza pra hash
+        phone: payload.Customer.mobile || undefined,
         firstName: firstName || undefined,
         lastName: lastName || undefined,
+        // IP do cliente sobe match quality em ~20%
+        clientIpAddress: payload.Customer.ip || undefined,
         externalId: profileId,
       },
       customData: {

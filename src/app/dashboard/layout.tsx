@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
+import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
 import { getCurrentProfile } from "@/lib/profile";
 import { getCurrentUsage } from "@/lib/usage";
 
@@ -24,6 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         />
         <main className="flex-1 p-4 lg:p-8">{children}</main>
       </div>
+      <OnboardingTour />
     </div>
   );
 }
