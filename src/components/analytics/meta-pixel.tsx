@@ -4,12 +4,14 @@ import Script from "next/script";
  * Meta (Facebook) Pixel — carregado via next/script com strategy
  * "afterInteractive" pra não bloquear o LCP.
  *
- * Pixel ID vem da env NEXT_PUBLIC_META_PIXEL_ID. Se a env estiver ausente,
- * o componente não renderiza nada (útil pra dev/preview sem disparar eventos).
+ * Pixel ID hardcoded pra garantir que sempre renderize, mesmo se a env
+ * NEXT_PUBLIC_META_PIXEL_ID não estiver no build. A env continua sendo um
+ * override (útil pra apontar pra outro pixel em dev/preview).
  */
+const PIXEL_ID_FALLBACK = "1884233408908633";
+
 export function MetaPixel() {
-  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-  if (!pixelId) return null;
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || PIXEL_ID_FALLBACK;
 
   return (
     <>
