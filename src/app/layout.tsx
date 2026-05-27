@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     apple: "/favicon.svg",
   },
+  // Meta-tag de verificação de domínio Meta Business
+  // https://business.facebook.com/settings/owned-domains
+  other: {
+    "facebook-domain-verification": "yirof1cfvspt8nh9ts8heitblyu2xv",
+  },
   openGraph: {
     title: "Peça Pronta — Assistente Jurídico com IA",
     description: "Otimize seu tempo, garanta a precisão e acelere sua carreira no Direito.",
