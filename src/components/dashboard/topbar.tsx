@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { getPlan, type PlanId } from "@/lib/plans";
 import { UserMenu } from "./user-menu";
+import { MobileMenuButton } from "./mobile-menu";
 
 export function Topbar({
   email,
@@ -18,11 +19,14 @@ export function Topbar({
   const planDef = getPlan(plan);
   return (
     <header className="flex h-16 items-center justify-between gap-3 border-b border-ink-300/70 bg-white px-4 lg:px-8">
-      {/* Logo só aparece em mobile (sidebar some) */}
-      <Link href="/dashboard" className="flex items-center gap-2 lg:hidden">
-        <Image src="/logo.svg" alt="Peça Pronta" width={32} height={32} />
-        <span className="text-base font-semibold">Peça Pronta</span>
-      </Link>
+      {/* Em mobile: hamburguer + logo. Em desktop: nada (sidebar substitui) */}
+      <div className="flex items-center gap-3 lg:hidden">
+        <MobileMenuButton />
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Peça Pronta" width={28} height={28} />
+          <span className="text-base font-semibold">Peça Pronta</span>
+        </Link>
+      </div>
 
       {/* Saudação só aparece em desktop */}
       <div className="hidden text-sm text-ink-500 lg:block">
